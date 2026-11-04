@@ -6,8 +6,8 @@ bancos: la jerarquía de **cajeros** (Abstracción) está separada de la
 jerarquía de **bancos** (Implementador), así que ambas pueden crecer de
 forma independiente.
 
-> Es una simulación: PIN de prueba fijo (`1234`), saldos en memoria y
-> comisiones fijas. No hay base de datos ni seguridad real.
+> Es una simulación: PIN de prueba fijo (`1234`) y saldos en memoria.
+> No hay base de datos ni seguridad real.
 
 ## Cómo ejecutar
 
@@ -42,11 +42,18 @@ El puente es el campo `protected Banco banco` dentro de `Cajero`. El cajero
 nunca sabe qué banco tiene detrás: no hay ningún `if` por tipo de banco,
 solo llamadas a la interfaz `Banco`.
 
-| Banco          | Saldo inicial | Comisión por operación |
-|----------------|---------------|------------------------|
-| BancoUnion     | 1500 Bs       | 3 Bs                   |
-| BancoSol       |  800 Bs       | 5 Bs                   |
-| BancoNacional  | 3000 Bs       | 0 Bs                   |
+Cada banco implementa el mismo contrato **con su propio comportamiento**,
+no solo con otros valores:
+
+| Banco          | Saldo inicial | Regla propia                                   | `retirar(500)` debita |
+|----------------|---------------|------------------------------------------------|-----------------------|
+| BancoUnion     | 1500 Bs       | Comisión fija de 3 Bs                          | 503                   |
+| BancoSol       |  800 Bs       | Comisión del 1 % del monto, mínimo 2 Bs        | 505                   |
+| BancoNacional  | 3000 Bs       | Sin comisión, pero permite sobregiro hasta 200 Bs | 500                |
+
+El cajero llama siempre igual (`banco.getComision(monto)` y
+`banco.debitar(monto + comision)`); cada banco decide cuánto cobra y si
+autoriza el débito.
 
 `CajeroAvanzado` agrega un límite diario de retiro de 1000 Bs (atributo
 privado `limiteDiario`), retiro rápido de 100 Bs y transferencias entre
@@ -55,16 +62,19 @@ bancos.
 ## Guion de demo (4 pasos)
 
 1. **Retiro con BancoUnion.** Cajero "Básico", tarjeta "BancoUnion",
-   PIN `1234` → Ingresar PIN. Retirar 100. El registro muestra
-   `Cajero.retirar(100) → BancoUnion.debitar(103)`: el cajero pidió 100 y
-   el banco aplicó su propia comisión de 3 Bs, que también aparece en el
+   PIN `1234` → Ingresar PIN. Monto 500 → Retirar. El registro muestra
+   `Cajero.retirar(500) → BancoUnion.debitar(503)`: el cajero pidió 500 y
+   el banco aplicó su comisión fija de 3 Bs, que también aparece en el
    ticket.
 
-2. **Cambiar de banco sin tocar el cajero.** Cambiar la tarjeta a
-   "BancoNacional" (`setBanco(BancoNacional)`), ingresar el PIN y retirar
-   100 otra vez: ahora se ve `debitar(100)`, comisión 0. Es el mismo
-   `Cajero` con otro banco al otro lado del puente. BancoUnion conserva su
-   saldo para cuando se vuelva a seleccionar.
+2. **Mismo cajero, otro banco, otro comportamiento.** Cambiar la tarjeta
+   a "BancoSol" (`setBanco(BancoSol)`), ingresar el PIN y retirar 500:
+   ahora se ve `debitar(505)` (1 % del monto). Cambiar a "BancoNacional"
+   y retirar 500 (`debitar(500)`, sin comisión); luego retirar 2600: el
+   saldo queda en −100 Bs porque este banco permite sobregiro. El mismo
+   retiro en BancoSol sería rechazado. El `Cajero` no sabe nada de estas
+   reglas: cada banco implementa el contrato a su manera. Además, cada
+   banco conserva su saldo al volver a seleccionarlo.
 
 3. **Cajero Avanzado.** Cambiar el cajero a "Avanzado" (aparecen "Retiro
    rápido 100" y "Transferir"). Retirar hasta pasar 1000 Bs en el día: el

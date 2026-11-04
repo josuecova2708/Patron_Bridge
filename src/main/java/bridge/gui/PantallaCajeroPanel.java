@@ -78,7 +78,7 @@ public class PantallaCajeroPanel extends JPanel {
 
         g2.setFont(new Font("SansSerif", Font.PLAIN, 14));
         int infoY = pantalla.y + pantalla.height - 38;
-        centrarTexto(g2, "Comisión por operación: " + banco.getComision() + " Bs", pantalla.x, infoY, pantalla.width);
+        centrarTexto(g2, banco.describirReglas(), pantalla.x, infoY, pantalla.width);
         if (cajero instanceof CajeroAvanzado avanzado) {
             g2.setColor(ACENTO);
             centrarTexto(g2, "Límite diario restante: " + avanzado.getLimiteRestante() + " Bs",

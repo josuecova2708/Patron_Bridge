@@ -45,8 +45,8 @@ public class CajeroAvanzado extends Cajero {
     /** Usa dos implementadores a la vez, ambos solo a través de la interfaz. */
     public boolean transferir(Banco destino, int monto) {
         if (!validar(monto)) return false;
-        int comision = banco.getComision();
-        if (!banco.debitar(monto + comision)) { rechazar("Saldo insuficiente."); return false; }
+        int comision = banco.getComision(monto);
+        if (!banco.debitar(monto + comision)) { rechazar("Fondos insuficientes."); return false; }
         destino.acreditar(monto);
         emitirTicket("TRANSFERENCIA", monto, comision);
         ticket += "\nDestino:   " + destino.getNombre();

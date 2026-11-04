@@ -10,7 +10,8 @@ public interface Banco {
     String getNombre();
     boolean autenticar(String pin);
     int getSaldo();
-    boolean debitar(int monto);   // false si el saldo no alcanza
+    boolean debitar(int monto);        // false si el banco no autoriza el débito
     void acreditar(int monto);
-    int getComision();            // comisión fija por operación, en Bs
+    int getComision(int monto);        // cada banco calcula su comisión a su manera
+    String describirReglas();          // texto corto de sus reglas, para la pantalla
 }

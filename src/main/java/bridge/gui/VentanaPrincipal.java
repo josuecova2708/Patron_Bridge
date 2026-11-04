@@ -237,7 +237,7 @@ public class VentanaPrincipal extends JFrame {
 
     /** Texto del débito real que recibe el banco: monto + su comisión. */
     private String debito(int monto) {
-        return clase(bancoActual) + ".debitar(" + (monto + bancoActual.getComision()) + ")";
+        return clase(bancoActual) + ".debitar(" + (monto + bancoActual.getComision(monto)) + ")";
     }
 
     private static String clase(Banco banco) {

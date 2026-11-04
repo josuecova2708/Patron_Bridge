@@ -53,8 +53,8 @@ public class Cajero {
 
     public boolean retirar(int monto) {
         if (!validar(monto)) return false;
-        int comision = banco.getComision();
-        if (!banco.debitar(monto + comision)) { rechazar("Saldo insuficiente."); return false; }
+        int comision = banco.getComision(monto);
+        if (!banco.debitar(monto + comision)) { rechazar("Fondos insuficientes."); return false; }
         emitirTicket("RETIRO", monto, comision);
         return true;
     }

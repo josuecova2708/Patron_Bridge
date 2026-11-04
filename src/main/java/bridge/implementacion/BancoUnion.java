@@ -1,8 +1,9 @@
 package bridge.implementacion;
 
-/** Implementador Concreto (GoF): cobra 3 Bs de comisión por operación. */
+/** Implementador Concreto (GoF): comisión fija de 3 Bs, sin importar el monto. */
 public class BancoUnion implements Banco {
     private static final String PIN_PRUEBA = "1234";
+    private static final int COMISION_FIJA = 3;
     private int saldo = 1500;
 
     public String getNombre() { return "Banco Unión"; }
@@ -16,5 +17,6 @@ public class BancoUnion implements Banco {
     }
 
     public void acreditar(int monto) { saldo += monto; }
-    public int getComision() { return 3; }
+    public int getComision(int monto) { return COMISION_FIJA; }
+    public String describirReglas() { return "Comisión fija: " + COMISION_FIJA + " Bs"; }
 }
