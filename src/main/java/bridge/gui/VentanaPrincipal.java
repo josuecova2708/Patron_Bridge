@@ -2,6 +2,7 @@ package bridge.gui;
 
 import bridge.abstraccion.Cajero;
 import bridge.abstraccion.CajeroAvanzado;
+import bridge.abstraccion.CajeroBasico;
 import bridge.implementacion.Banco;
 import bridge.implementacion.BancoNacional;
 import bridge.implementacion.BancoSol;
@@ -25,7 +26,7 @@ public class VentanaPrincipal extends JFrame {
     private final Banco[] bancos = {new BancoUnion(), new BancoSol(), new BancoNacional()};
 
     private Banco bancoActual = bancos[0];
-    private Cajero cajero = new Cajero(bancoActual);
+    private Cajero cajero = new CajeroBasico(bancoActual);
 
     private final PantallaCajeroPanel pantalla = new PantallaCajeroPanel(cajero);
     private final JTextArea log = new JTextArea();
@@ -216,7 +217,7 @@ public class VentanaPrincipal extends JFrame {
 
     private void cambiarTipoCajero(String tipo) {
         boolean avanzado = "Avanzado".equals(tipo);
-        cajero = avanzado ? new CajeroAvanzado(bancoActual) : new Cajero(bancoActual);
+        cajero = avanzado ? new CajeroAvanzado(bancoActual) : new CajeroBasico(bancoActual);
         pantalla.setCajero(cajero);
         botonRetiroRapido.setVisible(avanzado);
         botonTransferir.setVisible(avanzado);

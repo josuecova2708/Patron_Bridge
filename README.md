@@ -33,14 +33,33 @@ Ambos scripts compilan todo `src/main/java` hacia `out/` y luego ejecutan
 |--------------------------------------------------------|--------------------------|
 | `implementacion/Banco`                                 | Implementador (interfaz) |
 | `implementacion/BancoUnion`, `BancoSol`, `BancoNacional` | Implementador Concreto |
-| `abstraccion/Cajero`                                   | Abstracción              |
-| `abstraccion/CajeroAvanzado`                           | Abstracción Refinada     |
+| `abstraccion/Cajero`                                   | Abstracción (clase abstracta) |
+| `abstraccion/CajeroBasico`, `CajeroAvanzado`           | Abstracción Refinada     |
 | `gui/VentanaPrincipal`                                 | Cliente                  |
 | `gui/PantallaCajeroPanel`                              | (solo dibujo, no es parte del patrón) |
 
-El puente es el campo `protected Banco banco` dentro de `Cajero`. El cajero
-nunca sabe qué banco tiene detrás: no hay ningún `if` por tipo de banco,
+Equivalencia con el ejemplo de clase: `Puente` (abstracto) → `Cajero`;
+`PuenteArco` / `PuenteColgante` → `CajeroBasico` / `CajeroAvanzado`;
+`Material` → `Banco`; `Acero` / `Madera` / `Piedra` → `BancoUnion` /
+`BancoSol` / `BancoNacional`.
+
+El puente es el campo `protected Banco banco` dentro de `Cajero`. `Cajero`
+declara `consultarSaldo()`, `retirar()` y `depositar()` como abstractos, y
+cada cajero concreto los implementa llamando a los métodos del banco, igual
+que `PuenteArco.construirPuente()` llama a `material.construir()`. Ningún
+cajero sabe qué banco tiene detrás: no hay ningún `if` por tipo de banco,
 solo llamadas a la interfaz `Banco`.
+
+### Qué métodos del banco usa cada operación
+
+| Operación del cajero      | CajeroBasico             | CajeroAvanzado                                   |
+|---------------------------|--------------------------|--------------------------------------------------|
+| `ingresarPin` (en Cajero) | `autenticar`             | `autenticar`                                     |
+| `consultarSaldo`          | `getSaldo`               | `getSaldo` (+ muestra el límite restante)        |
+| `retirar`                 | `getComision`, `debitar` | verifica el límite diario, luego `getComision`, `debitar` |
+| `depositar`               | `acreditar`              | `acreditar`                                      |
+| `retiroRapido`            | —                        | `retirar(100)`                                   |
+| `transferir`              | —                        | `getComision`, `debitar` y `destino.acreditar`   |
 
 Cada banco implementa el mismo contrato **con su propio comportamiento**,
 no solo con otros valores:
@@ -63,7 +82,7 @@ bancos.
 
 1. **Retiro con BancoUnion.** Cajero "Básico", tarjeta "BancoUnion",
    PIN `1234` → Ingresar PIN. Monto 500 → Retirar. El registro muestra
-   `Cajero.retirar(500) → BancoUnion.debitar(503)`: el cajero pidió 500 y
+   `CajeroBasico.retirar(500) → BancoUnion.debitar(503)`: el cajero pidió 500 y
    el banco aplicó su comisión fija de 3 Bs, que también aparece en el
    ticket.
 
@@ -72,7 +91,7 @@ bancos.
    ahora se ve `debitar(505)` (1 % del monto). Cambiar a "BancoNacional"
    y retirar 500 (`debitar(500)`, sin comisión); luego retirar 2600: el
    saldo queda en −100 Bs porque este banco permite sobregiro. El mismo
-   retiro en BancoSol sería rechazado. El `Cajero` no sabe nada de estas
+   retiro en BancoSol sería rechazado. El cajero no sabe nada de estas
    reglas: cada banco implementa el contrato a su manera. Además, cada
    banco conserva su saldo al volver a seleccionarlo.
 
@@ -84,7 +103,9 @@ bancos.
    Esto demuestra la Abstracción Refinada agregando comportamiento sin
    tocar ningún banco.
 
-4. **Agregar un banco es solo una clase nueva.** Para sumar, por ejemplo,
-   un `BancoFie`, basta con implementar la interfaz `Banco` y añadirlo al
-   arreglo `bancos` de `VentanaPrincipal`. No cambia ni una línea de
-   `Cajero` ni de `CajeroAvanzado`.
+4. **Las dos jerarquías crecen por separado.** Para sumar un banco, por
+   ejemplo `BancoFie`, basta con implementar la interfaz `Banco` y añadirlo
+   al arreglo `bancos` de `VentanaPrincipal`, sin tocar ningún cajero. Y
+   para sumar un tipo de cajero (por ejemplo, un `CajeroDepositario` que
+   solo recibe depósitos) basta con extender `Cajero`, sin tocar ningún
+   banco.

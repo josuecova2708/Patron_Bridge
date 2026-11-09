@@ -6,14 +6,15 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * Abstracción (GoF): mantiene una referencia al Implementador (Banco) y
- * delega en él toda la operación real. No sabe qué banco concreto es:
- * no hay ningún if por tipo de banco, solo llamadas a la interfaz Banco.
+ * Abstracción (GoF): clase abstracta que mantiene la referencia al
+ * Implementador (Banco). Declara las operaciones del cajero y deja que
+ * cada cajero concreto las implemente llamando a los métodos del banco.
+ * No sabe qué banco concreto es: solo conoce la interfaz Banco.
  */
-public class Cajero {
+public abstract class Cajero {
     private static final DateTimeFormatter FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    protected Banco banco;
+    protected Banco banco;   // el puente
     protected boolean sesionActiva = false;
     protected String ticket = "Inserte su tarjeta\ne ingrese su PIN.";
 
@@ -32,6 +33,7 @@ public class Cajero {
     public boolean haySesion() { return sesionActiva; }
     public String getTicket() { return ticket; }
 
+    // usa banco.autenticar()
     public boolean ingresarPin(String pin) {
         sesionActiva = banco.autenticar(pin);
         ticket = sesionActiva
@@ -45,26 +47,13 @@ public class Cajero {
         ticket = "Retire su tarjeta.\nGracias por usar la red.";
     }
 
-    public boolean consultarSaldo() {
-        if (!sesionActiva) { rechazar("Ingrese su PIN primero."); return false; }
-        emitirTicket("CONSULTA", 0, 0);
-        return true;
-    }
+    // ---------- Operaciones que cada cajero implementa a su manera ----------
 
-    public boolean retirar(int monto) {
-        if (!validar(monto)) return false;
-        int comision = banco.getComision(monto);
-        if (!banco.debitar(monto + comision)) { rechazar("Fondos insuficientes."); return false; }
-        emitirTicket("RETIRO", monto, comision);
-        return true;
-    }
+    public abstract boolean consultarSaldo();
+    public abstract boolean retirar(int monto);
+    public abstract boolean depositar(int monto);
 
-    public boolean depositar(int monto) {
-        if (!validar(monto)) return false;
-        banco.acreditar(monto);
-        emitirTicket("DEPÓSITO", monto, 0);
-        return true;
-    }
+    // ---------- Ayudas comunes para los cajeros concretos ----------
 
     protected boolean validar(int monto) {
         if (!sesionActiva) { rechazar("Ingrese su PIN primero."); return false; }
